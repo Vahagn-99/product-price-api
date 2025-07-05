@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace App\Base\Product\Repositories;
 
-use App\Base\Product\Converters\Convertor;
+use App\Base\Product\Currency\Facade\Currency;
 use App\Base\Product\Dto\GetPriceFilter;
 use App\Models\Product as ProductModel;
 use App\Repository\Base;
+use DB;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class Repository extends Base
@@ -37,7 +38,7 @@ class Repository extends Base
     public function getAllConverted(GetPriceFilter $filter) : LengthAwarePaginator
     {
         return $this->query()
-            ->select('id', 'title', Convertor::convert($filter->currency, "price"))
+            ->select('id', 'title', DB::raw(Currency::convert($filter->currency, "price")))
             ->paginate($filter->pagination->per_page, $filter->pagination->columns, $filter->pagination->page_name, $filter->pagination->page, $filter->pagination->total);
     }
 
