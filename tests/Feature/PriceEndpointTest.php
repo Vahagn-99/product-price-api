@@ -38,7 +38,7 @@ class PriceEndpointTest extends TestCase
         $response = $this->getJson("/api/v1/prices?currency={$currency}");
         $response->assertOk();
 
-        $price = $response->json()[0]['price'];
+        $price = $response->json(['data'])[0]['price'];
 
         $this->assertStringContainsString($symbol, $price, "Expected symbol {$symbol} for currency {$currency}");
         $this->assertStringContainsString($expectedFormattedAmount, $price, "Expected formatted amount {$expectedFormattedAmount} for currency {$currency}");

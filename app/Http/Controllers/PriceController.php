@@ -8,7 +8,6 @@ use App\Base\Product\Manager as ProductManager;
 use App\Exceptions\RateLimitedException;
 use App\Http\Resources\Product as ProductResource;
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
@@ -98,7 +97,7 @@ class PriceController extends Controller
      *     )
      * )
      */
-    public function __invoke(Request $request): AnonymousResourceCollection
+    public function __invoke(Request $request)
     {
         $rate_limit_key = "get:prices:".$request->ip();
 
@@ -117,7 +116,17 @@ class PriceController extends Controller
                 ],
             ]));
 
-            return ProductResource::collection($products);
+            $result = ProductResource::collection($products);
+
+            return response()->json([
+                'data' => $result,
+                'meta' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total(),
+                ],
+            ]);
         } catch (RateLimitedException $e) {
             logger()->warning("Превышен лимит запросов: IP {$request->ip()}");
 
