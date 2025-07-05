@@ -2,12 +2,13 @@
 
 namespace App\Providers;
 
-use App\Base\Product\Repositories\{
-    CachedProductRepository,
+use App\Models\Product as ProductModel;
+use App\Repository\Query;
+use App\Base\Product\Repository\{
+    CacheDecorator,
     IProductRepository,
     ProductRepository,
 };
-use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 
 class RepositoryServiceProvider extends ServiceProvider
@@ -17,8 +18,8 @@ class RepositoryServiceProvider extends ServiceProvider
      */
     public function register() : void
     {
-        $this->app->bind(IProductRepository::class, function (Application $app) {
-           return $app->make(CachedProductRepository::class, ['actual_product_repository' => $app->make(ProductRepository::class)]);
+        $this->app->bind(IProductRepository::class, function () {
+           return new CacheDecorator(new ProductRepository(new Query(ProductModel::class)));
         });
     }
 

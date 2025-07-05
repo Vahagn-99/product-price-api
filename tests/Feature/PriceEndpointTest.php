@@ -40,8 +40,8 @@ class PriceEndpointTest extends TestCase
 
         $price = $response->json(['data'])[0]['price'];
 
-        $this->assertStringContainsString($symbol, $price, "Expected symbol {$symbol} for currency {$currency}");
-        $this->assertStringContainsString($expectedFormattedAmount, $price, "Expected formatted amount {$expectedFormattedAmount} for currency {$currency}");
+        $this->assertStringContainsString($symbol, $price, "Ожидаемая валюта {$symbol} для цены {$currency}");
+        $this->assertStringContainsString($expectedFormattedAmount, $price, "Ожидаемая форматированная цена {$expectedFormattedAmount} для валюты {$currency}");
     }
 
     public function test_it_returns_422_for_invalid_currency(): void

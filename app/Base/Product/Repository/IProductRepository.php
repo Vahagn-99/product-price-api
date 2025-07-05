@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Base\Product\Repositories;
+namespace App\Base\Product\Repository;
 
 use App\Base\Product\Dto\GetPriceFilter;
 use Illuminate\Pagination\LengthAwarePaginator;

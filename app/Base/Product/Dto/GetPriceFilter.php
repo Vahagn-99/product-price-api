@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace App\Base\Product\Dto;
 
-use App\Repository\Support\Pagination;
-use Illuminate\Contracts\Support\Arrayable;
+use App\Repository\Pagination;
 use Illuminate\Validation\Rule;
 use Spatie\LaravelData\Data;
 
@@ -15,7 +14,7 @@ class GetPriceFilter extends Data
      * Constructor GetPriceFilter
      *
      * @param string $currency
-     * @param \App\Repository\Support\Pagination $pagination
+     * @param \App\Repository\Pagination $pagination
      */
     public function __construct(
         public string $currency = 'rub',

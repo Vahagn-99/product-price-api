@@ -2,28 +2,25 @@
 
 declare(strict_types=1);
 
-namespace App\Base\Product\Repositories;
+namespace App\Base\Product\Repository;
 
-use App\Base\Product\Cache\Keys;
+use App\Base\Product\Currency\Facade\Currency;
 use App\Base\Product\Dto\GetPriceFilter;
-use Cache;
+use App\Repository\Query;
+use DB;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-/**
- * Декоратор кэша при работе с репозиторием продуктов
- */
-class CachedProductRepository implements IProductRepository
+class ProductRepository implements IProductRepository
 {
-    private const GET_ALL_CONVERTED_TTL = 60;
-
     /**
-     * CachedProductRepository constructor.
-     * @param \App\Base\Product\Repositories\ProductRepository $actual_product_repository
+     * ProductRepository constructor.
+     *
+     * @param \App\Repository\Query $query
      */
     public function __construct(
-        private readonly ProductRepository $actual_product_repository,
+        private readonly Query $query,
     ) {
-       //
+        //
     }
 
     //****************************************************************
@@ -31,7 +28,7 @@ class CachedProductRepository implements IProductRepository
     //****************************************************************
 
     /**
-     * Получение всех продуктов в указанной валюте из кэша
+     * Получение всех продуктов в указанной валюте
      *
      * @param \App\Base\Product\Dto\GetPriceFilter $filter
      * @return \Illuminate\Pagination\LengthAwarePaginator
@@ -40,9 +37,9 @@ class CachedProductRepository implements IProductRepository
      */
     public function getAllConverted(GetPriceFilter $filter) : LengthAwarePaginator
     {
-       return Cache::tags(Keys::getAllConvertedTag())->remember(Keys::getAllConverted($filter), self::GET_ALL_CONVERTED_TTL, function () use ($filter) {
-            return $this->actual_product_repository->getAllConverted($filter);
-        });
+        return $this->query->builder()
+            ->select('id', 'title', DB::raw(Currency::convert($filter->currency, "price")))
+            ->paginate($filter->pagination->per_page, $filter->pagination->columns, $filter->pagination->page_name, $filter->pagination->page, $filter->pagination->total);
     }
 
     //****************************************************************

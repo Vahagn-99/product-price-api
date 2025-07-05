@@ -4,43 +4,32 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\Eloquent\{
+    Builder,
+    Collection,
+    Model,
+    ModelNotFoundException,
+};
 
-abstract class Base
+class Query
 {
     /**
-     * Модель.
+     * Constructor Query
      *
-     * @var \Illuminate\Database\Eloquent\Model
+     * @param string $model_class_name
      */
-    protected string $model_class_name;
-
-    /**
-     * Base class;
-     */
-    public function __construct()
-    {
-        $this->model_class_name = $this->getModelClassName();
+    public function __construct(protected string $model_class_name) {
+        //
     }
-
-    /**
-     * Класс модели репозитория.
-     *
-     * @return string
-     */
-    abstract protected function getModelClassName() : string;
 
     /**
      * Получить Builder объект модели.
      *
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public function getBuilder()
+    public function builder() : Builder
     {
-        return $this->query();
+        return $this->model_class_name::query();
     }
 
     /**
@@ -52,7 +41,7 @@ abstract class Base
      */
     public function getBuilderDataSlice(int $limit, int $offset) : Builder
     {
-        return $this->query()
+        return $this->builder()
             ->limit($limit)
             ->offset($offset);
     }
@@ -70,11 +59,11 @@ abstract class Base
         }
 
         if (! empty($where)) {
-            return $this->query()
+            return $this->builder()
                 ->where($where)
                 ->get($columns);
         } else {
-            return $this->query()
+            return $this->builder()
                 ->get($columns);
         }
     }
@@ -92,7 +81,7 @@ abstract class Base
             $columns = ['*'];
         }
 
-        return $this->query()
+        return $this->builder()
             ->where($where)
             ->get($columns);
     }
@@ -111,7 +100,7 @@ abstract class Base
             $columns = ['*'];
         }
 
-        return $this->query()
+        return $this->builder()
             ->whereIn($column, $in)
             ->get($columns);
     }
@@ -133,7 +122,7 @@ abstract class Base
         }
 
         try {
-            return $this->query()
+            return $this->builder()
                 ->findOrFail($id, $columns);
         } catch (ModelNotFoundException) {
             throw new ModelNotFoundException($this->getRepositoryName()." - id $id not found");
@@ -154,10 +143,9 @@ abstract class Base
             $columns = ['*'];
         }
 
-        $query = $this->query();
+        $query = $this->builder();
 
         if ($with_trashed) {
-            /** @noinspection PhpUndefinedMethodInspection */
             $query->withTrashed();
         }
 
@@ -184,7 +172,7 @@ abstract class Base
             $columns = ['*'];
         }
 
-        $query = $this->query();
+        $query = $this->builder();
 
         if (! empty($with_trashed)) {
             $query->withTrashed();
@@ -201,7 +189,7 @@ abstract class Base
      */
     public function count() : int
     {
-        return $this->query()
+        return $this->builder()
             ->count();
     }
 
@@ -213,7 +201,7 @@ abstract class Base
      */
     public function countBy(array $where) : int
     {
-        return $this->query()
+        return $this->builder()
             ->where($where)
             ->count();
     }
@@ -221,16 +209,6 @@ abstract class Base
     //****************************************************************
     //************************** Support *****************************
     //****************************************************************
-
-    /**
-     * Получить Builder объект модели.
-     *
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    protected function query() : Builder
-    {
-        return $this->model_class_name::query();
-    }
 
     /**
      * Получить название репозитория
