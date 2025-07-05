@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 
 use App\Base\Product\Dto\GetPriceFilter;
 use App\Base\Product\Manager as ProductManager;
+use App\Base\System\Events\SystemLevelErrorOccurred;
 use App\Exceptions\RateLimitedException;
 use App\Http\Resources\Product as ProductResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use OpenApi\Annotations as OA;
+use Symfony\Component\HttpFoundation\Response as ResponseAlias;
 use Throwable;
 
 class PriceController extends Controller
@@ -92,7 +94,7 @@ class PriceController extends Controller
      *         response=500,
      *         description="Критическая ошибка сервера",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Критическая ошибка на стороне сервера, обратитесь к администратору")
+     *             @OA\Property(property="message", type="string", example="Сервис временно недоступен.")
      *         )
      *     )
      * )
@@ -103,7 +105,7 @@ class PriceController extends Controller
 
         try {
             if (RateLimiter::tooManyAttempts($rate_limit_key, 5)) {
-                throw new RateLimitedException("Слишком много запросов, попробуйте позже", 429);
+                throw new RateLimitedException("Слишком много запросов, попробуйте позже", ResponseAlias::HTTP_TOO_MANY_REQUESTS);
             }
 
             RateLimiter::hit($rate_limit_key, 1);
@@ -128,28 +130,28 @@ class PriceController extends Controller
                 ],
             ]);
         } catch (RateLimitedException $e) {
-            logger()->warning("Превышен лимит запросов: IP {$request->ip()}");
+            my_logger()->file('warning_products')->warning("Превышен лимит запросов: IP {$request->ip()}");
 
             return response()->json(['message' => $e->getMessage()], $e->getCode());
         } catch (ValidationException $e) {
-            logger()->error("Произошла ошибка при валидации: IP {$request->ip()}", [
-                'error' => $e->getMessage(),
+            my_logger()->file('warning_products')->warning("Ошибка валидации параметров: IP {$request->ip()}", [
+                'errors' => $e->errors(),
             ]);
 
             return response()->json([
-                'message' => 'Произошла ошибка при валидации',
+                'message' => 'Ошибка валидации параметров',
                 'errors' => $e->errors(),
-            ], 422);
+            ], ResponseAlias::HTTP_UNPROCESSABLE_ENTITY);
         }
         catch (Throwable $e) {
-            logger()->error("Критическая ошибка на стороне сервера: IP {$request->ip()}", [
+            my_logger()->file('error_products')->error("Системная ошибка: IP {$request->ip()}, сообития [".SystemLevelErrorOccurred::class."] будет отправлено.", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
-                'message' => 'Критическая ошибка на стороне сервера, обратитесь к администратору',
-            ], 500);
+                'message' => 'Сервис временно недоступен.',
+            ], ResponseAlias::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }
