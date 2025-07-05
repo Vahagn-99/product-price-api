@@ -29,10 +29,8 @@ docker compose up -d --build
 ### 4. Установка зависимостей, миграции и сидеры
 
 ```bash
-docker compose exec app bash
-
-composer install
-php artisan migrate --seed
+docker compose exec app composer install
+docker compose exec app php artisan migrate --seed
 ```
 
 ---
