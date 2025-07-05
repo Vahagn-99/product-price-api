@@ -18,12 +18,12 @@ class Currency extends Exception
     }
 
     /**
-     * Валюта не содержит символа или курса
+     * Валюта не содержит курса
      *
      * @return self
      */
-    public static function missing_symbol_or_rate() : Currency
+    public static function missing_rate() : Currency
     {
-        return new self("настройки валюты не содержит символа или курса");
+        return new self("настройки валюты не содержит курса");
     }
 }

@@ -6,7 +6,7 @@ namespace App\Base\Product\Currency\Convertor;
 
 use App\Base\Product\Exceptions\Currency;
 
-class SqlConvertor implements ISQLConvertor
+class SQLConvertor implements ISQLConvertor
 {
     /**
      * Convertor constructor.
@@ -36,7 +36,7 @@ class SqlConvertor implements ISQLConvertor
         $data = $this->config[$currency];
 
         if (! isset($data['rate'])) {
-            throw Currency::missing_symbol_or_rate();
+            throw Currency::missing_rate();
         }
 
         $rate = $data['rate'];
