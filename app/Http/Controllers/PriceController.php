@@ -141,15 +141,15 @@ class PriceController extends Controller
                 'errors' => $e->errors(),
             ], 422);
         }
-//        catch (Throwable $e) {
-//            logger()->error("Критическая ошибка на стороне сервера: IP {$request->ip()}", [
-//                'error' => $e->getMessage(),
-//                'trace' => $e->getTraceAsString(),
-//            ]);
-//
-//            return response()->json([
-//                'message' => 'Критическая ошибка на стороне сервера, обратитесь к администратору',
-//            ], 500);
-//        }
+        catch (Throwable $e) {
+            logger()->error("Критическая ошибка на стороне сервера: IP {$request->ip()}", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'message' => 'Критическая ошибка на стороне сервера, обратитесь к администратору',
+            ], 500);
+        }
     }
 }

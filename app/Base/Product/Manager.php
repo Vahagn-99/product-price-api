@@ -5,16 +5,16 @@ declare(strict_types=1);
 namespace App\Base\Product;
 
 use App\Base\Product\Dto\GetPriceFilter;
-use App\Base\Product\Repositories\Repository;
+use App\Base\Product\Repositories\IProductRepository;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class Manager
 {
     /**
-     * @param \App\Base\Product\Repositories\Repository $product_repository
+     * @param \App\Base\Product\Repositories\IProductRepository $product_repository
      */
     public function __construct(
-        private readonly Repository $product_repository,
+        private readonly IProductRepository $product_repository,
     ) {
         //
     }

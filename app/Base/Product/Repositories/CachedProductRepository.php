@@ -4,23 +4,26 @@ declare(strict_types=1);
 
 namespace App\Base\Product\Repositories;
 
-use App\Base\Product\Currency\Facade\Currency;
+use App\Base\Product\Cache\Keys;
 use App\Base\Product\Dto\GetPriceFilter;
-use App\Models\Product as ProductModel;
-use App\Repository\Base;
-use DB;
+use Cache;
 use Illuminate\Pagination\LengthAwarePaginator;
 
-class Repository extends Base
+/**
+ * Декоратор кэша при работе с репозиторием продуктов
+ */
+class CachedProductRepository implements IProductRepository
 {
+    private const GET_ALL_CONVERTED_TTL = 60;
+
     /**
-     * Класс модели репозитория.
-     *
-     * @return string
+     * CachedProductRepository constructor.
+     * @param \App\Base\Product\Repositories\ProductRepository $actual_product_repository
      */
-    protected function getModelClassName() : string
-    {
-        return ProductModel::class;
+    public function __construct(
+        private readonly ProductRepository $actual_product_repository,
+    ) {
+       //
     }
 
     //****************************************************************
@@ -28,7 +31,7 @@ class Repository extends Base
     //****************************************************************
 
     /**
-     * Получение всех продуктов в указанной валюте
+     * Получение всех продуктов в указанной валюте из кэша
      *
      * @param \App\Base\Product\Dto\GetPriceFilter $filter
      * @return \Illuminate\Pagination\LengthAwarePaginator
@@ -37,9 +40,9 @@ class Repository extends Base
      */
     public function getAllConverted(GetPriceFilter $filter) : LengthAwarePaginator
     {
-        return $this->query()
-            ->select('id', 'title', DB::raw(Currency::convert($filter->currency, "price")))
-            ->paginate($filter->pagination->per_page, $filter->pagination->columns, $filter->pagination->page_name, $filter->pagination->page, $filter->pagination->total);
+       return Cache::tags(Keys::getAllConvertedTag())->remember(Keys::getAllConverted($filter), self::GET_ALL_CONVERTED_TTL, function () use ($filter) {
+            return $this->actual_product_repository->getAllConverted($filter);
+        });
     }
 
     //****************************************************************

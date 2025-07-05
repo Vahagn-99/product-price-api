@@ -1,6 +1,5 @@
 <?php
 
-use App\Base\Access\Middleware\EnsureApiKeyIsValid;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -13,6 +12,8 @@ return Application::configure(basePath : dirname(__DIR__))
         health : '/up',
     )
     ->withProviders([
+        App\Providers\EventServiceProvider::class,
+        App\Providers\RepositoryServiceProvider::class,
     ])
     ->withMiddleware(function (Middleware $middleware) {
     })
