@@ -23,13 +23,13 @@ cp .env.example .env
 ### 3. Запуск контейнеров
 
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 ### 4. Установка зависимостей, миграции и сидеры
 
 ```bash
-docker exec -it app /bin/sh
+docker compose exec -it app /bin/sh
 
 composer install
 php artisan migrate --seed
@@ -78,8 +78,8 @@ http://localhost/api/documentation
 
 ---
 
-## 🧪 Тестирование
+## 📝 Тестирование
 
-՝՝՝
+```bash
 docker compose exec app php artisan test
 ```
